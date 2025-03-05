@@ -12,20 +12,16 @@ const app = express();
 const PORT = 5000;
 const USERS_FILE = path.join(__dirname, "../public/users.json");
 
-// Middleware
-app.use(express.json()); // Body parser
-app.use(cors()); // Enable CORS
-app.use(morgan("dev")); // Logging
-app.use(helmet()); // Security headers
-app.use(logger); // Custom logger middleware
+app.use(express.json()); 
+app.use(cors()); 
+app.use(morgan("dev")); 
+app.use(helmet());
+app.use(logger); 
 
-// Serving static files
 app.use(express.static(path.join(__dirname, "../public")));
 
-// Routes
 app.use("/api", userRoutes);
 
-// User Registration Endpoint
 app.post("/register", async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
@@ -49,7 +45,6 @@ app.post("/register", async (req, res) => {
     }
 });
 
-// User Login Endpoint
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -71,10 +66,8 @@ app.post("/login", async (req, res) => {
     }
 });
 
-// Error handling middleware
 app.use(errorHandler);
 
-// Start server
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

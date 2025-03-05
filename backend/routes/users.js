@@ -5,18 +5,16 @@ const path = require("path");
 const router = express.Router();
 const usersFile = path.join(__dirname, "../../public/users.json");
 
-// Read users.json file
 const readUsers = () => {
     if (!fs.existsSync(usersFile)) fs.writeFileSync(usersFile, "[]");
     return JSON.parse(fs.readFileSync(usersFile, "utf8"));
 };
 
-// Write to users.json file
 const writeUsers = (users) => {
     fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
 };
 
-// Register User
+// Register
 router.post("/Signup", (req, res) => {
     const { name, email, password } = req.body;
     let users = readUsers();
@@ -30,8 +28,6 @@ router.post("/Signup", (req, res) => {
 
     res.json({ message: "User registered successfully!" });
 });
-
-// Get User by Email
 router.get("/user/:email", (req, res) => {
     const { email } = req.params;
     const users = readUsers();
