@@ -8,7 +8,7 @@ const navLinks = [
   { path: "/home", display: "Home" },
   { path: "/services", display: "Services" },
   { path: "/doctors", display: "Find a Doctor" },
-  { path: "/contact", display: "Contact" },
+  // Removed React route for contact and replaced with external link below
 ];
 
 const Header = () => {
@@ -32,7 +32,10 @@ const Header = () => {
         <div className="flex items-center justify-between">
           <img src={logo} alt="logo" className="h-16 w-auto object-contain" />
 
-          <nav ref={menuRef} onClick={() => menuRef.current.classList.toggle("show__menu")}>
+          <nav
+            ref={menuRef}
+            onClick={() => menuRef.current.classList.toggle("show__menu")}
+          >
             <ul className="menu flex items-center gap-6">
               {navLinks.map((link) => (
                 <li key={link.path}>
@@ -46,26 +49,48 @@ const Header = () => {
                   </NavLink>
                 </li>
               ))}
+
+              {/* Contact opens the Express EJS page in a new tab */}
+              <li>
+                <a
+                  href="http://localhost:5000/contact"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-700 hover:text-green-600"
+                >
+                  Contact
+                </a>
+              </li>
             </ul>
           </nav>
 
           <div className="flex items-center gap-4">
             {token && user ? (
               <div className="flex items-center gap-4">
-                <Link to={role === "doctor" ? "/doctors/profile/me" : "/users/profile/me"}>
+                <Link
+                  to={role === "doctor" ? "/doctors/profile/me" : "/users/profile/me"}
+                >
                   <h3 className="text-white font-bold">{user?.name}</h3>
                 </Link>
-                <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded">
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500 text-white px-4 py-2 rounded"
+                >
                   Logout
                 </button>
               </div>
             ) : (
               <Link to="/login">
-                <button className="bg-green-500 text-white px-6 py-2 rounded">Log In</button>
+                <button className="bg-green-500 text-white px-6 py-2 rounded">
+                  Log In
+                </button>
               </Link>
             )}
 
-            <BiMenu className="w-6 h-6 cursor-pointer md:hidden" onClick={() => menuRef.current.classList.toggle("show__menu")} />
+            <BiMenu
+              className="w-6 h-6 cursor-pointer md:hidden"
+              onClick={() => menuRef.current.classList.toggle("show__menu")}
+            />
           </div>
         </div>
       </div>
