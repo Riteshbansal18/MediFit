@@ -30,13 +30,15 @@ const Login = () => {
           payload: { user: data.user, role: data.role, token: data.token },
         });
 
-        toast.success("Login successful!");
+        toast.success("✅ Login successful!");
         navigate("/");
       } else {
-        toast.error(data.message);
+        const errorMessage = data?.error?.message || data?.message || "Login failed!";
+        toast.error(`❌ ${errorMessage}`);
       }
     } catch (error) {
-      toast.error("Error logging in!");
+      toast.error("🚨 Server error. Please try again later.");
+      console.error("Login error:", error);
     }
   };
 
@@ -73,7 +75,7 @@ const Login = () => {
           </button>
         </form>
         <p className="text-white mt-4 text-center">
-          Dont have an account?{" "}
+          Don't have an account?{" "}
           <Link to="/Signup" className="text-green-300 hover:text-green-400 transition-all">
             Sign Up
           </Link>

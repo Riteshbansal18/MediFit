@@ -1,4 +1,4 @@
-import  { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -31,10 +31,11 @@ const Signup = () => {
         toast.success("Signup successful!");
         navigate("/login");
       } else {
-        toast.error(data.message);
+        const errorMessage = data?.error?.message || data?.message || "Signup failed!";
+        toast.error(`❌ ${errorMessage}`);
       }
     } catch (error) {
-      toast.error("Error registering user!");
+      toast.error("🚨 Server error. Please try again later.");
     }
   };
 

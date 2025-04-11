@@ -34,7 +34,10 @@ const Home = () => {
                   quia earum amet architecto, modi odio. Soluta unde ducimus
                   perferendis?
                 </p>
-                <button className="btn">Request an Appointment </button>
+                <Link to="/appointment">
+  <button className="btn">Request an Appointment</button>
+</Link>
+
               </div>
 
               <div className="mt-[30px] lg:mt-[70px] flex flex-col md:flex-row lg:items-center gap-5 lg:gap-[30px]">
