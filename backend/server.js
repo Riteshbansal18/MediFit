@@ -13,12 +13,9 @@ const createError = require("./utils/createError");
 const app = express();
 const PORT = 5000;
 const USERS_FILE = path.join(__dirname, "../public/users.json");
-
-// ✅ Setup EJS
 app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views")); // create 'views' folder beside server.js
+app.set("views", path.join(__dirname, "views")); 
 
-// ✅ Create write stream for logs.txt
 const accessLogStream = fs.createWriteStream(
   path.join(__dirname, "middleware", "logs.txt"),
   { flags: "a" }
@@ -33,35 +30,28 @@ const morganCombined = morgan("combined", {
   },
 });
 
-// ✅ Middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // to handle form POST data
+app.use(express.urlencoded({ extended: true })); // ye form data ko parse karta hai kyunki ham ejs use kr rhe hai
 app.use(cors());
 app.use(helmet());
 app.use(morganCombined);
 
-// ✅ Serve static files (CSS, images, etc.)
 app.use(express.static(path.join(__dirname, "../public")));
 
-// ✅ EJS Route - GET contact page
 app.get("/contact", (req, res) => {
-  res.render("contact"); // views/contact.ejs should exist
+  res.render("contact"); 
 });
 
-// ✅ EJS Route - POST form submission
 app.post("/contact", (req, res) => {
   const { email, subject, message } = req.body;
   console.log("📩 Contact form submitted:", { email, subject, message });
 
-  // You can optionally save this to a file or database
   res.send("✅ Thank you for contacting us!");
 });
 
-// ✅ Main API Routes
 app.use("/api", userRoutes);
 app.use("/api/appointments", appointmentRoutes);
 
-// ✅ Register Route
 app.post("/register", async (req, res, next) => {
   const { name, email, password } = req.body;
 
@@ -89,7 +79,6 @@ app.post("/register", async (req, res, next) => {
   }
 });
 
-// ✅ Login Route
 app.post("/login", async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -118,8 +107,6 @@ app.post("/login", async (req, res, next) => {
     next(createError(500, "Error while logging in"));
   }
 });
-
-// ✅ Global Error Handler
 app.use(errorHandler);
 
 // ✅ Start Server
