@@ -1,45 +1,31 @@
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const express = require("express");
 const router = express.Router();
+const Appointment = require("../models/Appointment"); // Your Mongoose model for appointment
 
-const appointmentsPath = path.join(__dirname, '../public/appointments.json');
+// POST /api/appointments - create a new appointment
+router.post("/", async (req, res) => {
+  try {
+    const { doctor, date, time, email } = req.body; // email if you want to associate user
 
-router.post('/', (req, res) => {
-  const newAppointment = req.body;
-
-  fs.readFile(appointmentsPath, 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ message: 'Error reading appointments' });
-
-    let appointments = [];
-    try {
-      appointments = JSON.parse(data);
-    } catch {
-      return res.status(500).json({ message: 'Error parsing appointments' });
+    if (!doctor || !date || !time) {
+      return res.status(400).json({ message: "Please fill all fields" });
     }
 
-    appointments.push(newAppointment);
-
-    fs.writeFile(appointmentsPath, JSON.stringify(appointments, null, 2), (err) => {
-      if (err) return res.status(500).json({ message: 'Error saving appointment' });
-
-      res.status(201).json({ message: 'Appointment saved successfully' });
+    // Create a new appointment document
+    const newAppointment = new Appointment({
+      doctor,
+      date,
+      time,
+      email, // optional: associate with user email
     });
-  });
-});
 
-// GET: Get appointments for a specific user
-router.get('/:email', (req, res) => {
-  const email = req.params.email;
+    await newAppointment.save();
 
-  fs.readFile(appointmentsPath, 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ message: 'Error reading appointments' });
-
-    let appointments = JSON.parse(data);
-    const userAppointments = appointments.filter(app => app.email === email);
-
-    res.json(userAppointments);
-  });
+    res.status(201).json({ message: "Appointment booked successfully" });
+  } catch (error) {
+    console.error("Error reading/writing appointments:", error);
+    res.status(500).json({ message: "Error reading appointments" });
+  }
 });
 
 module.exports = router;

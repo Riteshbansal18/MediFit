@@ -1,21 +1,26 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const fs = require("fs");
+const connectDB = require("./db");
 
 const userRoutes = require("./routes/users");
 const appointmentRoutes = require("./routes/appointment");
 const errorHandler = require("./middleware/errorHandler");
 const createError = require("./utils/createError");
+const authRoutes = require("./routes/auth");
+const User = require("./models/User");
 
 const app = express();
 const PORT = 5000;
-const USERS_FILE = path.join(__dirname, "../public/users.json");
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views")); 
 
+// Connect to MongoDB
+connectDB();
+
+// Logger setup
 const accessLogStream = fs.createWriteStream(
   path.join(__dirname, "middleware", "logs.txt"),
   { flags: "a" }
@@ -30,28 +35,59 @@ const morganCombined = morgan("combined", {
   },
 });
 
+// Middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // ye form data ko parse karta hai kyunki ham ejs use kr rhe hai
-app.use(cors());
+app.use(express.urlencoded({ extended: true }));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(helmet());
 app.use(morganCombined);
-
 app.use(express.static(path.join(__dirname, "../public")));
 
+// View engine
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api", userRoutes);
+app.use("/api/appointments", appointmentRoutes);
+
+// Contact Form Route (still uses JSON for now)
+const CONTACTS_FILE = path.join(__dirname, "../public/contact.json");
+
 app.get("/contact", (req, res) => {
-  res.render("contact"); 
+  res.render("contact");
 });
 
 app.post("/contact", (req, res) => {
   const { email, subject, message } = req.body;
   console.log("📩 Contact form submitted:", { email, subject, message });
 
+  let contacts = [];
+  if (fs.existsSync(CONTACTS_FILE)) {
+    const data = fs.readFileSync(CONTACTS_FILE, "utf-8");
+    contacts = JSON.parse(data);
+  }
+
+  const newContact = {
+    email,
+    subject,
+    message,
+    timestamp: new Date().toISOString(),
+  };
+
+  contacts.push(newContact);
+  fs.writeFileSync(CONTACTS_FILE, JSON.stringify(contacts, null, 2));
+
   res.send("✅ Thank you for contacting us!");
 });
 
-app.use("/api", userRoutes);
-app.use("/api/appointments", appointmentRoutes);
-
+// Register route (MongoDB)
 app.post("/register", async (req, res, next) => {
   const { name, email, password } = req.body;
 
@@ -60,18 +96,14 @@ app.post("/register", async (req, res, next) => {
   }
 
   try {
-    let users = [];
-    if (fs.existsSync(USERS_FILE)) {
-      users = JSON.parse(fs.readFileSync(USERS_FILE));
-    }
-
-    if (users.find((user) => user.email === email)) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return next(createError(400, "User already exists"));
     }
 
-    const newUser = { name, email, password };
-    users.push(newUser);
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+    const newUser = new User({ name, email, password });
+    await newUser.save();
+
     console.log("User registered:", newUser);
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
@@ -79,6 +111,7 @@ app.post("/register", async (req, res, next) => {
   }
 });
 
+// Login route (MongoDB)
 app.post("/login", async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -87,13 +120,7 @@ app.post("/login", async (req, res, next) => {
   }
 
   try {
-    if (!fs.existsSync(USERS_FILE)) {
-      return next(createError(401, "Invalid credentials"));
-    }
-
-    const users = JSON.parse(fs.readFileSync(USERS_FILE));
-    const user = users.find((u) => u.email === email && u.password === password);
-
+    const user = await User.findOne({ email, password });
     if (!user) {
       return next(createError(401, "Invalid credentials"));
     }
@@ -101,15 +128,17 @@ app.post("/login", async (req, res, next) => {
     res.status(200).json({
       user: { name: user.name, email: user.email },
       role: "user",
-      token: "fake-jwt-token",
+      token: "fake-jwt-token", // Replace with real JWT later
     });
   } catch (error) {
     next(createError(500, "Error while logging in"));
   }
 });
+
+// Global error handler
 app.use(errorHandler);
 
-// ✅ Start Server
+// Start server
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });
