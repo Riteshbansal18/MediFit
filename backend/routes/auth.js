@@ -1,4 +1,3 @@
-// routes/auth.js
 const express = require("express");
 const router = express.Router();
 const fs = require("fs");
@@ -8,7 +7,6 @@ const USERS_FILE = path.join(__dirname, "../../public/users.json");
 
 router.get("/me", (req, res) => {
   try {
-    // Example: get email from header
     const email = req.headers["x-user-email"];
 
     if (!email) {

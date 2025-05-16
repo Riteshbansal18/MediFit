@@ -17,10 +17,8 @@ const User = require("./models/User");
 const app = express();
 const PORT = 5000;
 
-// Connect to MongoDB
 connectDB();
 
-// Logger setup
 const accessLogStream = fs.createWriteStream(
   path.join(__dirname, "middleware", "logs.txt"),
   { flags: "a" }
@@ -48,7 +46,6 @@ app.use(helmet());
 app.use(morganCombined);
 app.use(express.static(path.join(__dirname, "../public")));
 
-// View engine
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
@@ -57,7 +54,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api/appointments", appointmentRoutes);
 
-// Contact Form Route (still uses JSON for now)
 const CONTACTS_FILE = path.join(__dirname, "../public/contact.json");
 
 app.get("/contact", (req, res) => {
@@ -87,7 +83,6 @@ app.post("/contact", (req, res) => {
   res.send("✅ Thank you for contacting us!");
 });
 
-// Register route (MongoDB)
 app.post("/register", async (req, res, next) => {
   const { name, email, password } = req.body;
 
@@ -111,7 +106,6 @@ app.post("/register", async (req, res, next) => {
   }
 });
 
-// Login route (MongoDB)
 app.post("/login", async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -128,17 +122,16 @@ app.post("/login", async (req, res, next) => {
     res.status(200).json({
       user: { name: user.name, email: user.email },
       role: "user",
-      token: "fake-jwt-token", // Replace with real JWT later
+      token: "fake-jwt-token", 
     });
   } catch (error) {
     next(createError(500, "Error while logging in"));
   }
 });
 
-// Global error handler
 app.use(errorHandler);
 
-// Start server
+
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });

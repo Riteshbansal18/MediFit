@@ -14,7 +14,6 @@ const writeUsers = (users) => {
     fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
 };
 
-// Register
 router.post("/Signup", (req, res) => {
     const { name, email, password } = req.body;
     let users = readUsers();
